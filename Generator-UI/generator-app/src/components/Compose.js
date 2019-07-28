@@ -120,6 +120,21 @@ class Compose extends Component {
     this.props.callbackFromParent(this.state, this.state.id);
   }
 
+  handlePortAddNetwork(){
+    var randomNetwork;
+    var traefic = [];
+    if(!this.state.isIngress){
+      var randomNetworkGen = Math.floor((Math.random() * 6) + 1);
+      randomNetwork = "traefik" + randomNetworkGen;
+      traefic = randomNetwork;
+      this.state.networksOne = [randomNetwork, ...this.state.networksOne];
+      this.setState({networksOne: this.state.networksOne});
+    }
+    else if(this.state.isIngress){
+      this.state.networksOne.splice(0, 1);
+    }
+  }
+
   handleRemoveNetworkOne(index) {
     this.state.networksOne.splice(index, 1);
 
@@ -479,6 +494,7 @@ class Compose extends Component {
               style="w-50 mx-2"
               onChange={(checked: boolean) => {
                 this.setState({ isIngress: checked });
+                this.handlePortAddNetwork();
               }}
             />
             {portNumberInput}
@@ -566,12 +582,15 @@ class Compose extends Component {
                     value={network}
                   />
                   &nbsp;&nbsp;
-                  <button
-                    onClick={() => this.handleRemoveNetworkOne(index)}
-                    class="btn btn-outline-danger"
-                  >
-                    Remove
-                  </button>
+                  { this.state.networksOne[0].includes('traefik') && index == 0 && this.state.isIngress ?
+                  <label>Mohita</label> : <button
+                  onClick={() => this.handleRemoveNetworkOne(index)}
+                  class="btn btn-outline-danger"
+                >
+                  Remove
+                </button>
+                  }
+                  
                 </div>
               );
             })}
