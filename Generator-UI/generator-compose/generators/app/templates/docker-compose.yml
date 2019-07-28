@@ -1,0 +1,41 @@
+<%_ var networksSet = new Set() _%>
+version: '3.7'
+services:
+  <%= column.serviceName %>:
+    image: <%= column.imageName %>
+    deploy:
+      mode: replicated
+      replicas: <%= column.replica %>
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: dfs
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: pause
+        max_failure_ratio: 0
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - <%= column.portNumber %>
+    networks:
+   <%_ var network = column.networksOne _%>
+   <%_ for(var i=0; i<network.length; i++){ _%>
+   <%_ networksSet.add(network[i]) _%>
+      - <%= network[i] %>
+   <%_ } _%>
+
+networks:
+<%_ networksSet.forEach(network => { _%>
+<%_ if(network !== ''){ _%>
+  <%= network %>:
+  external:
+    name: <%= network %>
+<%_ } _%>
+<%_ }); _%>
+

@@ -1,0 +1,24 @@
+{
+  "name": "generator-compose",
+  "version": "0.1.0",
+  "description": "",
+  "files": [
+    "generators"
+  ],
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "dependencies": {
+    "async": "^2.6.3",
+    "async-series": "0.0.1",
+    "child_process": "^1.0.2",
+    "cors": "^2.8.5",
+    "ejs": "^2.6.2",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "js-yaml": "^3.13.1",
+    "npm": "^6.10.1",
+    "path": "^0.12.7",
+    "yeoman-generator": "^1.1.1"
+  }
+}

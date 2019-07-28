@@ -1,0 +1,136 @@
+<%_ var networksSet = new Set() _%>
+<%_ var networksSet = new Set() _%>
+<%_ var serviceData = column.services _%>
+<%_ var teamName = column.collectionName _%>
+<%_ var networksSet = new Set() _%>
+<%_ var configSet = new Set() _%>
+<%_ var configInternalSet = new Set() _%>
+<%_ var configData = [] _%>
+<%_ var volumeSet = new Set() _%>
+<%_ var secretSet = new Set() _%>
+<%_ var secretData = [] _%>
+version: '3.7'
+services:
+<%_ for(var i=0; i<serviceData.length; i++){ _%>
+  <%= serviceData[i].serviceName %>:
+    image: <%= serviceData[i].imageName %>
+    deploy:
+      mode: replicated
+      replicas: <%= serviceData[i].replica %>
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      resources:
+        limits:
+          memory: <%= serviceData[i].memory %>M
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: pause
+        max_failure_ratio: 0
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - <%= serviceData[i].portNumber %>
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fk <%= serviceData[i].health %>']
+      interval: 1m
+      timeout: 10s
+      retries: 5
+    <%_ var netwoks = serviceData[i].networksOne _%>
+    <%_ if(netwoks != null && netwoks != ''){ _%>
+    networks:
+  <%_ for(var net=0; net<netwoks.length; net++){ _%>
+    <%_ networksSet.add(netwoks[net].trim()) _%>
+      - <%= netwoks[net].trim() %>
+    <%_ } _%>
+<%_ } _%>
+ <%_ var volumes = serviceData[i].localVolumeOne _%>
+ <%_ if(volumes != null && volumes != ''){ _%>
+    volumes:
+  <%_ for(var vol=0; vol<volumes.length; vol++){ _%>
+  <%_ volumeSet.add(volumes[vol].trim()) _%>
+      <%= volumes[vol].trim() %>:
+        name: <%= volumes[vol].trim() %>
+      <%_ } _%>
+ <%_ } _%>
+  <%_ var NASData = serviceData[i].NASVol _%>
+ <%_ if(NASData != null && NASData != ''){ _%>
+    volumes:
+<%_ for(var data=0; data<NASData.length; data++){ _%>
+<%_ volumeSet.add(NASData[data].NASVolume) _%>
+      nas-vol: <%= NASData[data].NASVolume %>
+        driver: local
+        driver_opts:
+          device: :/<%= NASData[data].NASPath %>
+          o: addr: <%= NASData[data].NASHost %>,nolock,soft,rw
+          type: "nfs"
+        labels: 'com.docker.ucp.access.label=/Shared/<%= teamName %>'
+  <%_ } _%>
+  <%_ } _%>
+      <%_ secretData.push(serviceData[i].secretsOne) _%>
+      <%_ var secrets = serviceData[i].secretsOne _%>
+      <%_ if(secrets != null && secrets != ''){ _%>
+    secrets:
+  <%_ for(var sec=0; sec<secrets.length; sec++){ _%>
+      - source: <%= secrets[sec].secretName %>
+        target: <%= secrets[sec].secretName %>
+  <%_ } _%>
+    labels:
+      - 'com.docker.ucp.access.label=/Shared/<%= teamName %>'
+<%_ } _%>
+    <%_ configData.push(serviceData[i].configs) _%>
+    <%_ var configDataInternal = serviceData[i].configs _%>
+    <%_ if(configDataInternal != null && configDataInternal != ''){ _%>
+    configs:
+<%_ for(var config=0; config<configDataInternal.length; config++){ _%>
+      - source: <%= configDataInternal[config].source %>
+        target: <%= configDataInternal[config].target %>
+  <%_ } _%>
+  <%_ } _%>
+<%_ } _%>
+
+<%_ if (networksSet != null && networksSet.size !== 0) { _%>
+networks: 
+<%_ networksSet.forEach(network => { _%>
+<%_ if(network !== ''){ _%>
+  <%= network %>:
+    name: <%= network %>
+<%_ } _%>
+<%_ }); _%>
+<%_ } _%>
+<%_ if (secretData != null && secretData[0].length !== 0 && secretData.length !== 0) { _%>
+secrets: 
+<%_ for(var i=0; i< secretData.length; i++){ _%>
+<%_ for(var j=0; j< secretData[i].length; j++){ _%>
+<%_ if(!secretSet.has(secretData[i][j].secretName)){ _%>
+  <%= secretData[i][j].secretName %>:
+    file: ./<%= secretData[i][j].secretFile%>
+      <%_ secretSet.add(secretData[i][j].secretName) _%>
+      <%_ } _%>
+    <%_ } _%>
+  <%_ } _%>
+<%_ } _%>
+<%_ if (configData != null && configData[0].length !== 0 && configData.length !== 0) { _%>
+configs:
+<%_ for(var conf=0; conf< configData.length; conf++){ _%>
+<%_ for(var j=0; j< configData[conf].length; j++){ _%>
+<%_ if(!configSet.has(configData[conf][j].source)){ _%>
+  name: <%= configData[conf][j].source %>-v<%= configData[conf][j].version %>
+    file: ./<%= configData[conf][j].file%>
+    labels:
+      - 'com.docker.ucp.access.label=/Shared/<%= teamName %>'
+      <%_ configSet.add(configData[conf][j].source) _%>
+      <%_ } _%>
+      <%_ } _%>
+  <%_ } _%>
+<%_ } _%>
+<%_ if (volumeSet != null && volumeSet.size !== 0) { _%>
+volumes:
+<%_ volumeSet.forEach(volume => { _%>
+  <%= volume %>:
+    name: <%= volume %>
+<%_ }); _%>
+<%_ } _%>
