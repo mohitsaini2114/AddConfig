@@ -15,6 +15,10 @@ class Compose extends Component {
       serviceName: "",
       imageName: "",
       portNumber: "",
+
+      traefikURL: "",
+      traefikAppPort: "",
+
       health: "",
       replica: "",
       memory: "",
@@ -25,11 +29,15 @@ class Compose extends Component {
       secretsOne: [],
       localVolumeOne: [],
       configs: [],
-      NASVol: []    
+      NASVol: []
     };
     this.handleServiceNameChange = this.handleServiceNameChange.bind(this);
     this.handleImageNameChange = this.handleImageNameChange.bind(this);
     this.handlePortNumberChange = this.handlePortNumberChange.bind(this);
+
+    this.handleTraefikURLInputChange = this.handleTraefikURLInputChange.bind(this);
+    this.handleTraefikAppPortInputChange = this.handleTraefikAppPortInputChange.bind(this);
+
     this.handleHealthChange = this.handleHealthChange.bind(this);
     this.handleMemoryChange = this.handleMemoryChange.bind(this);
     this.handleReplicaChange = this.handleReplicaChange.bind(this);
@@ -56,6 +64,30 @@ class Compose extends Component {
     this.setState({ portNumber: this.state.portNumber });
     this.props.callbackFromParent(this.state, this.state.id);
   }
+
+
+
+
+
+
+  handleTraefikURLInputChange(event) {
+    this.state.traefikURL = event.target.value;
+    this.setState({ traefikURL: this.state.traefikURL });
+    this.props.callbackFromParent(this.state, this.state.id);
+  }
+  handleTraefikAppPortInputChange(event) {
+    this.state.traefikAppPort = event.target.value;
+    this.setState({ traefikAppPort: this.state.traefikAppPort });
+    this.props.callbackFromParent(this.state, this.state.id);
+  }
+
+
+
+
+
+
+
+
   handleHealthChange(event) {
     this.state.health = event.target.value;
     this.setState({ health: this.state.health });
@@ -101,12 +133,12 @@ class Compose extends Component {
 
   handleSecretNameInput(e, index) {
     if (this.state.secretsOne[index] == "") {
-        this.state.secretsOne[index] = {};
-      }
-  
-      this.state.secretsOne[index].secretName = e.target.value;
-      this.setState({ secretsOne: this.state.secretsOne });
-      this.props.callbackFromParent(this.state, this.state.id);
+      this.state.secretsOne[index] = {};
+    }
+
+    this.state.secretsOne[index].secretName = e.target.value;
+    this.setState({ secretsOne: this.state.secretsOne });
+    this.props.callbackFromParent(this.state, this.state.id);
   }
   handleSecretFileInput(e, index) {
     if (this.state.secretsOne[index] == "") {
@@ -238,33 +270,65 @@ class Compose extends Component {
       localVolAddRemoveButton,
       NASVolAdd,
 
-
-      portNumberLabel,
       portNumberInput,
+      traefikURLLabel,
+      traefikURLInput,
+      traefikAppPortLabel,
+      traefikAppPortInput,
+
 
       NASVolAddAll;
 
 
-    if(isIngress){
+    if (!isIngress) {
 
-        portNumberLabel = (
-            <span style={this.styles} className="badge badge-primary m-2">
-              Port Mapping :
-            </span> 
+      // portNumberLabel = (
+      //     <span style={this.styles} className="badge badge-primary m-2">
+      //       Port Mapping :
+      //     </span> 
 
-          );
-          portNumberInput = (
-            <input
-              type="text"
-              name="portNumber"
-              value={this.state.portNumber}
-              onChange={this.handlePortNumberChange}
-              placeholder="8080:8080"
-            />
+      //   );
+      portNumberInput = (
+        <input
+          type="text"
+          name="portNumber"
+          value={this.state.portNumber}
+          onChange={this.handlePortNumberChange}
+          placeholder="8080:8080"
+        />
 
-          );
+      );
+
+    } else {
+      traefikURLLabel = (
+
+        <span style={this.styles} className="badge badge-primary m-2">
+          URL
+              </span>
+
+      );
+      traefikURLInput = (
+        <input
+          type="text"
+          name="portNumber"
+          value={this.state.traefikURL}
+          onChange={this.handleTraefikURLInputChange}
+        />
+
+      );
+      traefikAppPortLabel = (<span style={this.styles} className="badge badge-primary m-2">
+        App Port
+    </span>);
+
+      traefikAppPortInput = (<input
+        type="text"
+        name="portNumber"
+        value={this.state.traefikAppPort}
+        onChange={this.handleTraefikAppPortInputChange}
+      />)
 
     }
+
 
 
     if (!isVolumeNAS) {
@@ -314,7 +378,7 @@ class Compose extends Component {
         <button
           onClick={e => this.handleAddNASVolume(e)}
           class="btn btn-outline-success"
-         
+
         >
           {" "}
           Add NAS Volume
@@ -374,7 +438,7 @@ class Compose extends Component {
           </span>
           <input
             type="text"
-            text-align =  "right"
+            text-align="right"
             name="ServiceName"
             value={this.state.serviceName}
             onChange={this.handleServiceNameChange}
@@ -399,8 +463,12 @@ class Compose extends Component {
           </div>
 
           <div>
-              {}
-         {/* <a href="https://docs.docker.com/compose/compose-file/#ports" target="_blank">what's this? </a> */}
+            {}
+            {/* <a href="https://docs.docker.com/compose/compose-file/#ports" target="_blank">what's this? </a> */}
+
+            <span style={this.styles} className="badge badge-primary m-2">
+              Port Mapping :
+            </span>
 
             <BootstrapSwitchButton
               checked={false}
@@ -413,10 +481,13 @@ class Compose extends Component {
                 this.setState({ isIngress: checked });
               }}
             />
+            {portNumberInput}
+            {traefikURLLabel}
+            {traefikURLInput}
+            <br></br>
+            {traefikAppPortLabel}
+            {traefikAppPortInput}
 
-            {portNumberLabel}
-      {portNumberInput}
-            
             {/* <input
               type="text"
               name="portNumber"
@@ -454,7 +525,7 @@ class Compose extends Component {
           </div>
 
           <div class="colset">
-            <span style={this.styles}  text-align =  "right" className="badge badge-primary m-2">
+            <span style={this.styles} text-align="right" className="badge badge-primary m-2">
               Memory(in megabytes) :
             </span>
             <input
@@ -472,12 +543,12 @@ class Compose extends Component {
               Networks:
             </span >
 
-            <a href="https://docs.docker.com/compose/compose-file/#networks" target="_blank" color= "black">what's this? </a>
+            <a href="https://docs.docker.com/compose/compose-file/#networks" target="_blank" color="black">what's this? </a>
             {/* <button onClick = {this.handleNetworkClick}>Plus</button> */}
             <button
               onClick={e => this.handleAddNetworkOne(e)}
               class="btn btn-outline-success"
-             
+
             >
               {" "}
               Add Network
@@ -551,7 +622,7 @@ class Compose extends Component {
                     />
                   </div>
                 </div>
-                
+
               );
             })}
           </div>

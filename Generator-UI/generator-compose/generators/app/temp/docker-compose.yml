@@ -17,6 +17,15 @@ services:
     deploy:
       mode: replicated
       replicas: <%= serviceData[i].replica %>
+      <%_ if(serviceData[i].traefikAppPort !== null && serviceData[i].traefikAppPort != '' && serviceData[i].traefikURL !== null && serviceData[i].traefikURL != '') { _%>
+      lables: 
+        -'traefik.docker.network=traefik-2'
+        -'traefik.frontend.rule=Host:<%= serviceData[i].traefikURL %>'
+        -'traefik.port=<%= serviceData[i].traefikAppPort %>'
+        -'traefik.protocol=https'
+        -'traefik.enable=true'
+        -'com.docker.ucp.access.label=/Shared/<%= teamName %>'
+      <%_ } _%>
       restart_policy:
         condition: on-failure
         delay: 5s
