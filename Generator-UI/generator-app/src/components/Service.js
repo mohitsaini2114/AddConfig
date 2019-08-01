@@ -11,7 +11,7 @@ class Service extends Component {
     this.state = {
       services: [""],
       collectionName: "",
-      isValid: true,
+      isValid: false,
       errors: [],
       isValidTeam: true
     };
@@ -21,6 +21,7 @@ class Service extends Component {
     );
     this.handleSubmit = this.handleSubmit.bind(this);
     this.myCallback = this.myCallback.bind(this);
+    // this.handleRemoveService = this.handleRemoveService(this);
   }
 
   styles = {
@@ -74,28 +75,35 @@ class Service extends Component {
       if (
         service == "" ||
         service.serviceName == "" ||
-        service.imageName == ""
+        service.imageName == "" ||
+        this.state.collectionName == "" ||
+        service.imageName == undefined ||
+        service.serviceName == undefined
       ) {
         this.setState({ isValid: false });
       }
+      else{
+        this.setState({ isValid: true })
+      }
     });
 
-    if (this.state.collectionName.length === 0) {
-      this.setState({ isValidTeam: false });
-    }
+    // if (this.state.collectionName.length === 0) {
+    //   this.setState({ isValidTeam: false });
+    // }
 
     var finalServiceState = {};
     finalServiceState.services = this.state.services;
     finalServiceState.collectionName = this.state.collectionName;
     console.log(finalServiceState.collectionName);
     //console.log(finalServiceState.services.serviceName);
-    const errors = this.validate(finalServiceState);
-    if (errors.length > 0) {
-      this.setState({ errors });
-      return;
-    }
+    // const errors = this.validate(finalServiceState);
+    // if (errors.length > 0) {
+    //   this.setState({ errors });
+    //   return;
+    // }
     //finalServiceState = this.state.services
     //console.log("final service state: " + finalServiceState[0].serviceName);
+    if (this.state.isValid){
     axios
       .post("http://localhost:7000/", finalServiceState)
       //https://jsonplaceholder.typicode.com/posts
@@ -105,6 +113,7 @@ class Service extends Component {
       .catch(error => {
         console.log(error);
       });
+    }
   };
 
   handleAddService() {
@@ -114,6 +123,21 @@ class Service extends Component {
     this.state.collectionName = event.target.value;
     this.setState({ collectionName: this.state.collectionName });
     this.state.isValidTeam = true;
+    this.state.services.forEach((service, index) => {
+      if (
+        service == "" ||
+        service.serviceName == "" ||
+        service.imageName == "" ||
+        this.state.collectionName == "" ||
+        service.imageName == undefined ||
+        service.serviceName == undefined
+      ) {
+        this.setState({ isValid: false });
+      }
+      else{
+        this.setState({ isValid: true })
+      }
+    });
   }
 
   myCallback(dataFromChild, index) {
@@ -129,6 +153,22 @@ class Service extends Component {
     // if(this.state.services[index] != null && this.state.services[index].serviceName != ""){
     //     console.log("service name in parent:" + this.state.services[index].serviceName)
     // }
+    if (
+      this.state.services[index].serviceName == "" ||
+      this.state.services[index].imageName == "" ||
+      this.state.collectionName == ""
+    ) {
+      this.setState({ isValid: false });
+    }
+    else{
+      this.setState({ isValid: true })
+    }
+  }
+
+  handleRemoveService(index) {
+    this.state.services.splice(index, 1);
+
+    this.setState({ services: this.state.services });
   }
 
   render() {
@@ -161,12 +201,15 @@ class Service extends Component {
         <h1 class="card-body">Services</h1>
         {this.state.services.map((service, index) => {
           return (
+            <div >
             <Compose
+              service = {service}
               callbackFromParent={this.myCallback}
-              key={index}
-              id={index}
+              id={service.id ? service.id : index}
               isValid={this.state.isValid}
             />
+            <button onClick={() => this.handleRemoveService(index)}>Remove Service</button>
+            </div>
           );
         })}
         <br />
