@@ -6,6 +6,7 @@ var fileDownload = require("js-file-download");
 
 
 class Service extends Component {
+  // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................start
   constructor(props) {
     super(props);
     this.state = {
@@ -13,12 +14,18 @@ class Service extends Component {
       collectionName: "",
       isValid: false,
       errors: [],
-      isValidTeam: true
+      isValidTeam: true,
+      serviceCount: 1
     };
+    this.state.services[0]={}
+    this.state.services[0].isDeleted = false;
+    this.setState({services: this.state.services})
     this.handleAddService = this.handleAddService.bind(this);
     this.handleCollectionNameChange = this.handleCollectionNameChange.bind(
       this
     );
+    // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................end
+
     this.handleSubmit = this.handleSubmit.bind(this);
     this.myCallback = this.myCallback.bind(this);
     // this.handleRemoveService = this.handleRemoveService(this);
@@ -118,7 +125,23 @@ class Service extends Component {
 
   handleAddService() {
     this.setState({ services: [...this.state.services, ""] });
+    // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................start
+    var serviceCount_actual = this.state.services.length;
+    this.state.services[serviceCount_actual] = {};
+    this.state.services[serviceCount_actual].isDeleted = false;
+    this.setState({services: this.state.services})
+    var count = 0;
+    this.state.services.forEach((service, index) => {
+      if(service.isDeleted == false){
+        count++
+        // this.state.serviceCount++;
+        // this.setState({serviceCount: this.state.serviceCount})
+      }
+    })
+    this.state.serviceCount = count;
+    this.setState({serviceCount: this.state.serviceCount});
   }
+  // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................end
   handleCollectionNameChange(event) {
     this.state.collectionName = event.target.value;
     this.setState({ collectionName: this.state.collectionName });
@@ -150,6 +173,12 @@ class Service extends Component {
     }
     this.state.services[index] = dataFromChild;
     this.setState({ services: this.state.services });
+     // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................start
+    this.state.services[index].isDeleted = false;
+    this.setState({ services: this.state.services });
+     // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................end
+
+
     // if(this.state.services[index] != null && this.state.services[index].serviceName != ""){
     //     console.log("service name in parent:" + this.state.services[index].serviceName)
     // }
@@ -165,14 +194,29 @@ class Service extends Component {
     }
   }
 
+  // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................start
   handleRemoveService(index) {
-    this.state.services.splice(index, 1);
+    //this.state.services.splice(index, 1);
+    this.state.services[index].isDeleted = true;
 
     this.setState({ services: this.state.services });
+    
+    var count = 0;
+    this.state.services.forEach((service, index) => {
+      if(service.isDeleted == false){
+        count++
+        // this.state.serviceCount++;
+        // this.setState({serviceCount: this.state.serviceCount})
+      }
+    })
+    this.state.serviceCount = count;
+    this.setState({serviceCount: this.state.serviceCount});
+    
   }
-
+  // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................end
   render() {
     const { errors } = this.state;
+    //var count = 0;
     return (
       <div>
           <Helmet>
@@ -198,17 +242,23 @@ class Service extends Component {
             <font class="text-danger"> Please Enter Collection(Team) Name</font>
           )}
         </label>
+        
         <h1 class="card-body">Services</h1>
+        
         {this.state.services.map((service, index) => {
+          let isDeletedVal = service != "" ? service.isDeleted : false;
+        
           return (
             <div >
             <Compose
               service = {service}
               callbackFromParent={this.myCallback}
-              id={service.id ? service.id : index}
+              id={index}
               isValid={this.state.isValid}
+              isDeleted= {isDeletedVal}
             />
-            <button onClick={() => this.handleRemoveService(index)}>Remove Service</button>
+            { !isDeletedVal && this.state.serviceCount > 1 &&
+            <button onClick={() => this.handleRemoveService(index)}>Remove Service</button>}
             </div>
           );
         })}
@@ -232,3 +282,5 @@ class Service extends Component {
   }
 }
 export default Service;
+
+// MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...................line 245,247,249,256,258,260,261

@@ -401,6 +401,7 @@ class Compose extends Component {
       );
       NASVolAddAll = this.state.NASVol.map((config, index) => {
         return (
+          // {this.props.isDeleted &&
           <div key={index}>
             &nbsp;
             <div>
@@ -444,8 +445,12 @@ class Compose extends Component {
         );
       });
     }
+// MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................
+    let isDeleted = this.props.isDeleted;
 
     return (
+      !isDeleted &&
+      // MOHITTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT...............................
       <div key={this.props.id} class="border" >
         <label className="m-4">
           <span style={this.styles} className="badge badge-primary m-2">
